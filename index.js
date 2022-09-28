@@ -15,6 +15,9 @@ app.engine('hbs', hbs.engine({
 app.use(express.static('public'))
 app.use(bodyParser.urlencoded({extended:false}))
 
+//IMPORTAR MODEL USUARIOS
+const Usuario = require('./models/Usuario')
+
 //CONFIGURAÇÃO DAS SESSIONS
 app.use(session({
 	secret: 'CriarUmaChaveQualquer1234!',
