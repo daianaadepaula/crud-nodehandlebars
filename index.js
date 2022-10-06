@@ -57,8 +57,17 @@ app.get('/users', (req, res)=>{
 	// res.render('users', {NavActiveUsers:true})
 })
 
-app.get('/editar', (req, res)=>{
-	res.render('editar')
+app.post('/editar', (req, res)=>{
+	let id = req.body.id
+	Usuario.findByPk(id)
+	.then((dados)=>{
+		return res.render('editar', {error: false, id: dados.id, nome: dados.nome, email: dados.email})
+	})
+	.catch((err)=>{
+		console.log(err)
+		return res.render('editar', {error: true, problema: 'Não é possível editar este registro'})
+	})
+	//res.render('editar')
 })
 
 app.post('/cad', (req, res)=>{
@@ -117,6 +126,70 @@ app.post('/cad', (req, res)=>{
 	})	
 
 })
+
+app.post('/update', (req, res) =>{
+
+	//VALORES VINDOS DO FORMULÁRIO
+	let nome = req.body.nome;
+	let email = req.body.email;
+
+	//ARRAY QUE VAI CONTER OS ERROS
+	const erros = []
+
+	//REMOVER OS ESPAÇOS EM BRANCO ANTES E DEPOIS
+	nome = nome.trim()
+	email = email.trim()
+
+	//LIMPAR O NOME DE CARACTERES ESPECIAIS (APENAS LETRAS)
+	nome = nome.replace(/[^A-zÀ-ú\s]/gi, '')
+
+	//VERIFICAR SE ESTÁ VAZIO OU NÃO CAMPO
+	if (nome == '' || typeof nome == undefined || nome == null){
+		erros.push({mensagem: "Campo nome não pode ser vazio!"})
+	}
+
+	//VERIFICAR SE O CAMPO NOME É VÁLIDO (APENAS LETRAS)
+	if (!/^[A-Za-záàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ\s]+$/.test(nome)){
+		erros.push({mensagem: "Nome inválido!"})
+	}
+
+	//VERIFICAR SE ESTÁ VAZIO OU NÃO CAMPO
+	if (email == '' || typeof email == undefined || email == null){
+		erros.push({mensagem: "Campo email não pode ser vazio!"})
+	}
+
+	//VERIFICAR SE EMAIL É VÁLIDO
+	if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)){
+		erros.push({mensagem: "Campo email inválido!"})
+	}
+
+	if(erros.length > 0){
+		console.log(erros)
+		return res.status(400).send({status: 400, erro: erros})
+	}
+
+	//SUCESSO NENHUM ERRO
+	//ATUALIZAR REGISTRO NO BANCO DE DADOS
+	Usuario.update(
+		{
+			nome: nome,
+			email: email.toLowerCase()
+		},
+		{
+			where: {
+				id: req.body.id
+			}
+		}
+	).then((resultado)=>{
+		console.log(resultado)
+		return res.redirect('/users')
+	})
+	.catch((err)=>{
+		console.log(err)
+	})
+})
+
+
 
 app.listen(PORT, ()=>{
 	console.log(`Servidor rodando em http://localhost:${PORT}`)
