@@ -42,7 +42,19 @@ app.get('/', (req, res)=>{
 })
 
 app.get('/users', (req, res)=>{
-	res.render('users', {NavActiveUsers:true})
+	Usuario.findAll()
+	.then((valores)=>{
+		//console.log(valores.map(valores => valores.toJSON()))
+		if(valores.length > 0){
+			return res.render('users', {NavActiveUsers:true, table: true, usuarios: valores.map(valores => valores.toJSON())})
+		}else{
+			res.render('users', {NavActiveUsers:true, table: false})
+		}
+	})
+	.catch((err) => {
+		console.log(`Houve um problema: ${err}`)
+	})
+	// res.render('users', {NavActiveUsers:true})
 })
 
 app.get('/editar', (req, res)=>{
